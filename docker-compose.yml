@@ -1,0 +1,43 @@
+version: '2'
+services:
+  foodsoft:
+    build: foodsoft
+    restart: always
+    environment:
+      - DATABASE_URL=mysql2://foodsoft:${FOODSOFT_DB_PASSWORD}@mariadb/foodsoft_test?encoding=utf8
+      - QUEUE=foodsoft_notifier
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY_BASE=${FOODSOFT_SECRET_KEY_BASE}
+
+  foodsoft_cron:
+    extends: foodsoft
+    command: cron -f
+
+  foodsoft_resque:
+    extends: foodsoft
+    command: rake resque:work
+
+  haproxy:
+    build: haproxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+#    volumes:
+#      - certs:/certs:ro
+
+  mariadb:
+    image: mariadb:10.1
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mariadb:/var/lib/mysql
+
+  redis:
+    image: redis:3.2-alpine
+    restart: always
+
+volumes:
+#  certs:
+  mariadb:
