@@ -177,8 +177,9 @@ Make sure to have this information before adding it to our configuration.
 (please expand this section)
 
 - Add to Github [operations team](https://github.com/orgs/foodcoops/teams/operations)
-- Add to relevant mailing lists (nabble ops, private ops and support)
-- Add user account to server (probably, see [issue #8](https://github.com/foodcoops/foodcoops.net/issues/8))
+- Add to relevant mailing lists (nabble [ops group](http://foodsoft.51229.x6.nabble.com/template/NamlServlet.jtp?macro=manage_users_and_groups&group=Ops+global), [ops list](http://foodsoft.51229.x6.nabble.com/foodsoft-global-ops-f1394.html), systemausfall announce and support)
+- Add user account to server with garbage password (see [issue #8](https://github.com/foodcoops/foodcoops.net/issues/8))
+- Obtain user's SSH key and verify it from a Github gist, Keybase or a video call.
 - Add SSH key to user account
 - Add SSH key to git account
 - (maybe more, pending #8)
