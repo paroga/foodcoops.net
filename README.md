@@ -105,6 +105,14 @@ EOF
 
 ## Common tasks
 
+* [Deploying](#deploying)
+* [Upgrading Foodsoft](#upgrading-foodsoft)
+* [Adding a new foodcoop](#adding-a-new-foodcoop)
+* [Giving a foodcoop its own subdomain](#giving-a-foodcoop-its-own-subdomain)
+* [Adding a member to the operations team](#adding-a-member-to-the-operations-team)
+* [Troubleshooting](#troubleshooting)
+
+
 ### Deploying
 
 When you've made a change to this repository, you'll likely want to deploy it to production.
@@ -127,6 +135,23 @@ git push production master
 Note that you can only push to the `master` branch, and that you need to wait until the
 _build_ step is done. If that is interrupted or fails, the changes will _not_ be pushed
 (restarting containers is done also when you interrupt the process).
+
+### Upgrading Foodsoft
+
+**Note:** this section has not been tested yet!
+
+To update Foodsoft to a new version:
+
+* Update version in number in [`foodsoft/Dockerfile`](foodsoft/Dockerfile)
+* Look at the [changelog](https://github.com/foodcoops/foodsoft/blob/master/CHANGELOG.md) to see if anything is required for migrating, and prepare it.
+* [Deploy](#deploying)
+* Without delay, run database migrations and restart the foodsoft images.
+
+```shell
+cd /home/git/foodcoops.net
+docker-compose run --rm bundle exec foodsoft rake multicoops:run TASK=db:migrate
+docker-compose restart foodsoft foodsoft_worker # foodsoft_mail
+```
 
 ### Adding a new foodcoop
 
