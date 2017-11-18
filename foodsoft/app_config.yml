@@ -147,7 +147,5 @@ production:
 # demo instance
 demo:
   <<: *defaults
-  name: Foodcoop Demo
   database:
-    database: fs_demo
-
+    database: foodsoft_demo

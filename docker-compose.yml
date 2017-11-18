@@ -1,23 +1,35 @@
 version: '2'
 services:
 
-  #
-  # Foodsoft (main)
-  #
+  certbot:
+    image: foodcoops/certbot:latest
+    restart: always
+    environment:
+      CERTBOT_DOMAINS: |-
+        app.${DOMAIN}
+      CERTBOT_EMAIL: admin@${DOMAIN}
+      CERTBOT_TOUCH_FILE: /haproxy_triggers/reload
+    volumes:
+      - certs:/certs
+      - haproxy_triggers:/haproxy_triggers
 
   foodsoft:
     build: foodsoft
     restart: always
     environment:
-      - DATABASE_URL=mysql2://foodsoft:${FOODSOFT_DB_PASSWORD}@mariadb/foodsoft?encoding=utf8
-      - SHAREDLISTS_DATABASE_URL=mysql2://foodsoft:${FOODSOFT_DB_PASSWORD}@mariadb/sharedlists?encoding=utf8
+      - DATABASE_URL=mysql2://foodsoft:${FOODSOFT_DB_PASSWORD}@mariadb/foodsoft_demo?encoding=utf8mb4
+      - EMAIL_SENDER=noreply@${DOMAIN}
+      #- ERROR_RECIPIENTS=
+      - HOSTNAME=app.${DOMAIN}
       - QUEUE=foodsoft_notifier
       - REDIS_URL=redis://redis:6379
       - SECRET_KEY_BASE=${FOODSOFT_SECRET_KEY_BASE}
-      - RAILS_FORCE_SSL=false
-      - EMAIL_SENDER=foodsoft@${DOMAIN}
-      #- ERROR_RECIPIENTS=
-      - HOSTNAME
+      - SHAREDLISTS_DATABASE_URL=mysql2://foodsoft:${FOODSOFT_DB_PASSWORD}@mariadb/sharedlists?encoding=utf8mb4
+      - SMTP_DOMAIN=app.${DOMAIN}
+      - SMTP_ADDRESS
+      - SMTP_PORT
+      - SMTP_USER_NAME
+      - SMTP_PASSWORD
 
   foodsoft_cron:
     extends: foodsoft
@@ -26,29 +38,6 @@ services:
   foodsoft_worker:
     extends: foodsoft
     command: ./proc-start worker
-
-  #
-  # Sharedlists
-  #
-
-  sharedlists:
-    image: foodcoops/sharedlists:latest
-    restart: always
-    environment:
-      - DATABASE_URL=mysql2://sharedlists:${SHAREDLISTS_DB_PASSWORD}@mariadb/sharedlists?encoding=utf8
-      - SECRET_TOKEN=${SHAREDLISTS_SECRET_KEY_BASE}
-      - RAILS_RELATIVE_URL_ROOT=/sharedlists
-      - RAILS_FORCE_SSL=false
-    volumes:
-      - supplier_assets:/usr/src/app/supplier_assets
-
-  sharedlists_cron:
-    extends: sharedlists
-    command: ./proc-start cron
-
-  #
-  # Supporting services
-  #
 
   haproxy:
     build: haproxy
@@ -62,29 +51,38 @@ services:
       - certs:/certs:ro
       - haproxy_triggers:/haproxy_triggers
 
-  certbot:
-    image: foodcoops/certbot:latest
-    restart: always
-    environment:
-      - CERTBOT_TOUCH_FILE=/haproxy_triggers/reload
-      - CERTBOT_DOMAINS=${HOSTNAME}
-      - CERTBOT_ENABLED
-      - CERTBOT_EMAIL
-    volumes:
-      - certs:/certs
-      - haproxy_triggers:/haproxy_triggers
-
   mariadb:
-    image: mariadb:10.1
+    image: mariadb:10.3
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD
     volumes:
       - mariadb:/var/lib/mysql
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    environment:
+      - PMA_ABSOLUTE_URI=https://app.${DOMAIN}/phpmyadmin/
+      - PMA_HOST=mariadb
+
   redis:
     image: redis:3.2-alpine
     restart: always
+
+  sharedlists:
+    image: foodcoops/sharedlists:latest
+    restart: always
+    environment:
+      - DATABASE_URL=mysql2://sharedlists:${SHAREDLISTS_DB_PASSWORD}@mariadb/sharedlists?encoding=utf8mb4
+      - SECRET_TOKEN=${SHAREDLISTS_SECRET_KEY_BASE}
+      - RAILS_RELATIVE_URL_ROOT=/sharedlists
+    volumes:
+      - supplier_assets:/usr/src/app/supplier_assets
+
+  sharedlists_cron:
+    extends: sharedlists
+    command: ./proc-start cron
 
 volumes:
   certs:
