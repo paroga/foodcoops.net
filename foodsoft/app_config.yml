@@ -149,3 +149,8 @@ demo:
   <<: *defaults
   database:
     database: foodsoft_demo
+
+elsabinar:
+  <<: *defaults
+  database:
+    database: foodsoft_elsabinar
